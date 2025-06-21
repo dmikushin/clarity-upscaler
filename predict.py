@@ -186,9 +186,32 @@ class Predictor(BasePredictor):
             lst.append(value)
         return lst
 
+    def load_image_data(self, image_input):
+        """Load image data from various sources: file://, http://, https://, data:, or local path"""
+        image_str = str(image_input)
+        
+        if image_str.startswith('data:'):
+            # Handle data URI (base64)
+            header, data = image_str.split(',', 1)
+            return base64.b64decode(data)
+        elif image_str.startswith('http://') or image_str.startswith('https://'):
+            # Handle HTTP/HTTPS URLs
+            response = requests.get(image_str)
+            response.raise_for_status()
+            return response.content
+        elif image_str.startswith('file://'):
+            # Handle file:// URLs
+            file_path = image_str[7:]  # Remove 'file://' prefix
+            with open(file_path, 'rb') as f:
+                return f.read()
+        else:
+            # Handle local file path or Path object
+            with open(image_input, 'rb') as f:
+                return f.read()
+
     def predict(
         self,
-        image: Path = Input(description="input image"),
+        image: str = Input(description="input image (supports file://, http://, https://, data: URLs, or local paths)"),
         prompt: str = Input(description="Prompt", default="masterpiece, best quality, highres, <lora:more_details:0.5> <lora:SDXLrender_v2.0:1>"),
         negative_prompt: str = Input(description="Negative Prompt", default="(worst quality, low quality, normal quality:2) JuggernautNegative-neg"),
         scale_factor: float = Input(
@@ -288,13 +311,12 @@ class Predictor(BasePredictor):
             sd_model = os.path.basename(path_to_custom_checkpoint)
             self.api.refresh_checkpoints()
 
-        image_file_path = image
-
-        with open(image_file_path, "rb") as image_file:
-            binary_image_data = image_file.read()
+        # Handle different image input types (file://, http://, https://, data:, or local path)
+        binary_image_data = self.load_image_data(image)
 
         if mask:
-            with Image.open(image_file_path) as img:
+            # For mask processing, we need to get the image size from binary data
+            with Image.open(BytesIO(binary_image_data)) as img:
                 original_resolution = img.size
 
         if downscaling:

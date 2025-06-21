@@ -47,6 +47,19 @@
      }'
    ```
 
+   **Note:** The API supports both HTTP URLs and local file paths using the `file:///` URL scheme:
+   ```bash
+   # Example with local file
+   curl -X POST http://localhost:5000/predictions \
+     -H "Content-Type: application/json" \
+     -d '{
+       "input": {
+         "image": "file:///path/to/local/image.jpg",
+         "scale_factor": 2
+       }
+     }'
+   ```
+
 4. **Available API endpoints:**
    - `POST /predictions` - создать предикцию
    - `GET /predictions/{id}` - получить результат
