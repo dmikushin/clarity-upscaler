@@ -28,7 +28,8 @@ safetensors
 scikit-image>=0.19
 timm
 tomesd
-torch
+torch==2.7.0+cu126 --index-url https://download.pytorch.org/whl/cu126
+xformers>=0.0.30 --index-url https://download.pytorch.org/whl/cu126
 torchdiffeq
 torchsde
 transformers==4.30.2

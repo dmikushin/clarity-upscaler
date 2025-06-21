@@ -9,7 +9,7 @@ from cog.mode import Mode
 
 def main():
     # Load cog config
-    config = Config.load_from_file("cog.yaml")
+    config = Config()
     
     # Create shutdown event
     shutdown_event = threading.Event()
